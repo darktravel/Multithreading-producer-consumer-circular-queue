@@ -1,0 +1,98 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <iostream>
+#include <map>
+#include <string>
+#include <chrono>
+#include <thread>
+#include <mutex>
+ 
+
+std::mutex g_pages_mutex;
+
+using namespace std;
+
+class Myqueue{
+public:
+	int front=0;
+	int cursize=0;
+	int size;
+	int * arr;
+	Myqueue(int size){
+	    this->size=size;
+		arr= (int*)malloc(size*sizeof(int));
+	}
+
+public:
+    void enqueue(int ele){
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::lock_guard<std::mutex> guard(g_pages_mutex);
+    	if(cursize==size){
+    		cout<<"Queue full"<<"\n";
+    	}
+    	else{
+    	    
+    		int toput=(front+cursize)%size;
+    	    
+    	    
+    		arr[toput]=ele;
+    		cursize++;
+    	}
+    	
+    	
+    	
+    }
+    int dequeue(){
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+         std::lock_guard<std::mutex> guard(g_pages_mutex);
+    	if(cursize==0){
+    		cout<<"Queue empty"<<"\n";
+    		return -1;
+    	}
+    
+    		int ret=arr[front];
+    		front++;
+    		cursize--;
+    		return ret;
+    	
+    	
+    }
+    int cursi(){
+    	return cursize;
+    	
+    }
+    void produce(int ele){
+       enqueue(ele);
+        
+    }
+    void consume(){
+            cout<<dequeue()<<"\n";
+             
+    }
+};
+
+
+int main() {
+	Myqueue *que=new Myqueue(3);
+	thread p1(&Myqueue::produce,que,1);
+	thread p2(&Myqueue::produce,que,2);
+	thread p3(&Myqueue::produce,que,3);
+	thread q1(&Myqueue::consume,que);
+	thread q2(&Myqueue::consume,que);
+	thread q3(&Myqueue::consume,que);
+	p1.join();
+	p2.join();
+	p3.join();
+	q1.join();
+	q2.join();
+	q3.join();
+	// your code goes here
+	return 0;
+}
